@@ -45,11 +45,22 @@ void PrintPlayer(Player p)
   printf("%s is a %s, current XP.....%d\n", p.name, p.class, p.experience); 
 }
 
+void PrintPlayerByRef(Player* p)
+{
+  printf("%s is a %s, current XP.....%d\n", p->name, p->class, p->experience); 
+}
+
+
 
 void SavePlayersToFile(Player players[], int playerCount)
 {
+  char fileName[20]; 
+  puts("Filename? "); 
+  scanf("%s", fileName); 
+  
   FILE* saveFile; 
   saveFile = fopen("savedGame.txt", "w"); 
+   //saveFile = fopen("D:\\GameData\\savedGame.txt", "w");
 
   if(saveFile == NULL){
     printf("Problem opening file...\n"); 
@@ -115,6 +126,16 @@ int main(void) {
   {
     PrintPlayer(players[i]); 
   }
+  
+  char fileName[20]; 
+  puts("Do you want to save your progress? (y/n)"); 
+  char yesNo; 
+  scanf(" %c", &yesNo); 
+
+  if(yesNo == 'y'){}
+    SavePlayersToFile(players, 4); 
+  }
+
 
   puts(""); 
   
