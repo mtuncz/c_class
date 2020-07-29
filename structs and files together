@@ -1,0 +1,124 @@
+#include <stdio.h>
+#include <stdlib.h> 
+#include <string.h> 
+#include <time.h>
+
+
+typedef struct player 
+{
+  char name[20]; 
+  char class[10];
+  int experience; 
+  int level; 
+  int minDamage; 
+  int maxDamage; 
+}Player; 
+
+
+Player GeneratePlayer()
+{
+  int random = rand() % 2; 
+  Player p; 
+  switch(random)
+  {
+    case 0: 
+      strcpy(p.class, "Barbarian"); 
+      break; 
+    case 1: 
+      strcpy(p.class, "Wizard"); 
+      break; 
+  }
+
+  p.level = 1; 
+  p.maxDamage = 4; 
+  p.minDamage = 1; 
+  p.experience = 0; 
+
+  printf("What's your name %s.\n", p.class); 
+  scanf("%s", p.name, 20); 
+
+  return p; 
+}
+
+void PrintPlayer(Player p)
+{
+  printf("%s is a %s, current XP.....%d\n", p.name, p.class, p.experience); 
+}
+
+
+void SavePlayersToFile(Player players[], int playerCount)
+{
+  FILE* saveFile; 
+  saveFile = fopen("savedGame.txt", "w"); 
+
+  if(saveFile == NULL){
+    printf("Problem opening file...\n"); 
+    return; 
+  }
+
+  for(int i = 0; i < playerCount; i++)
+  {
+    fprintf(saveFile, "%s %s %d %d %d %d\n", players[i].name,
+    players[i].class, players[i].experience, players[i].level, 
+    players[i].minDamage, players[i].maxDamage); 
+  }
+
+  fclose(saveFile);
+}
+
+void LoadGame(Player players[], int maxPlayers)
+{
+  FILE* saveFile; 
+
+  saveFile = fopen("savedGame.txt", "r"); 
+
+  if(saveFile == NULL){
+    printf("Problem opening file..\n"); 
+    return; 
+  }
+
+  for(int i = 0; i < maxPlayers; i++)
+  {
+    fscanf(saveFile, "%s %s %d %d %d %d", players[i].name,
+    players[i].class, &players[i].experience, &players[i].level, 
+    &players[i].minDamage, &players[i].maxDamage); 
+  }
+
+  fclose(saveFile); 
+
+}
+
+
+int main(void) {
+  srand((unsigned)time(NULL)); 
+
+  char loadSavedGame = 'y'; 
+
+  Player players[4]; 
+
+  puts("Load a saved game?"); 
+  scanf(" %c", &loadSavedGame); 
+
+  if(loadSavedGame == 'y'){
+    LoadGame(players, 4); 
+  } else {
+    for(int i = 0; i < 4; i++)
+    {
+      players[i] = GeneratePlayer(); 
+    }
+  }
+
+
+  
+
+  for(int i = 0; i < 4; i++)
+  {
+    PrintPlayer(players[i]); 
+  }
+
+  puts(""); 
+  
+  SavePlayersToFile(players, 4); 
+
+  return 0;
+}
