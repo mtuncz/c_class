@@ -1,0 +1,243 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h> 
+#include <string.h>
+
+
+struct Employee {
+	char name[80];
+	double hours_worked;
+	double hourly_rate;
+	double gross_pay;
+	double base_pay;
+	double overtime_pay;
+	double taxes;
+	double net_pay;
+};
+
+char InputModel() {
+	char inputMode;
+	printf("Please enter input mode.\n");
+	printf("F/f for File or K/k for keyboard\t:");
+	scanf(" %c", &inputMode);
+	return inputMode;
+}
+
+void load(struct Employee employees[], int* count) {
+
+    for (int i = 0; i < *count; i++) {
+        printf("Name\t\t\t:\t");
+        scanf(" %s[^\n]", employees[i].name);
+        if (strcmp(employees[i].name, "-1") == 0) {
+            *count = i;
+            break;
+        }
+
+        printf("Hours Worked\t:\t");
+        scanf("%lf", &employees[i].hours_worked);
+        if (employees[i].hours_worked == -1) {
+            *count = i;
+            break;
+        }
+
+        printf("Hourly Rate\t\t:\t");
+        scanf("%lf", &employees[i].hourly_rate);
+        if (employees[i].hourly_rate == -1) {
+            *count = i;
+            break;
+        }
+        puts("");
+    }
+}
+
+void calculatePay(struct Employee employees[], int count) {
+    for (int i = 0; i < count; i++) {
+        double currBase = 0, currGross = 0, currOvertime = 0;
+        if (employees[i].hours_worked <= 40) {
+            currBase = employees[i].hours_worked * employees[i].hourly_rate;
+        }
+        else {
+            currBase = 40 * employees[i].hourly_rate;
+            currOvertime = (employees[i].hours_worked - 40) * (employees[i].hourly_rate * 1.5);
+        }
+        currGross = currBase + currOvertime;
+        employees[i].gross_pay = currGross;
+        employees[i].base_pay = currBase;
+        employees[i].overtime_pay = currOvertime;
+    }
+}
+
+void calculateTax(struct Employee employees[], int count) {
+    for (int i = 0; i < count; i++) {
+        double currTax = employees[i].gross_pay * 0.20;
+        double currNet = employees[i].gross_pay - currTax;
+        employees[i].taxes = currTax;
+        employees[i].net_pay = currNet;
+    }
+}
+
+void menu() {
+    printf("====== Chose an option from below menu ====\n");
+    printf("%d) Update an existing record\n", 1);
+    printf("%d) Print a single record\n", 2);
+    printf("%d) Print all records\n", 3);
+    printf("%d) Exit the program\n", 4);
+}
+
+
+void updateExistingRecord(struct Employee employees[], int recordNo) {
+    printf("Update name\t\t\t\t:\t ");
+    scanf(" %s[^\n]", employees[recordNo].name);
+    if (strcmp(employees[recordNo].name, "-1") == 0) {
+        return;
+    }
+    printf("Updated Hours Worked\t:\t");
+    scanf("%lf", &employees[recordNo].hours_worked);
+    if (employees[recordNo].hours_worked == -1) {
+        return;
+    }
+    printf("Updated Hourly Rate\t\t:\t");
+    scanf("%lf", &employees[recordNo].hourly_rate);
+    if (employees[recordNo].hourly_rate == -1) {
+        return;
+    }
+}
+
+
+
+
+void printAll(struct Employee employees[], int count) {
+    puts("");
+    for (int i = 0; i < count; i++) {
+        printf("Name is\t\t\t:\t%s\n", employees[i].name);
+        printf("Worked Hours\t:\t%lf\n", employees[i].hours_worked);
+        printf("Hourly Rate\t\t:\t%lf\n", employees[i].hourly_rate); puts("");
+    }
+    puts("");
+    puts("-------------------------");
+}
+
+
+
+void printSingle(struct Employee employees[], int recordNo) {
+    puts("");
+    printf("Name is\t\t\t:\t%s\n", employees[recordNo].name);
+    printf("Worked Hours\t:\t%lf\n", employees[recordNo].hours_worked);
+    printf("Hourly Rate\t\t:\t%lf\n", employees[recordNo].hourly_rate);
+    puts("");
+}
+
+void SaveToFile(struct Employee employees[], int count) {
+
+    char fileName[80];
+    printf("Filename?\n");
+    scanf(" %s[^\n]", fileName);
+
+    FILE* data;
+    data = fopen(fileName, "w");
+
+    if (data == NULL) {
+        printf("Error...");
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        fprintf(data, "%s %.2lf %.2lf\n", employees[i].name, employees[i].hours_worked, employees[i].hourly_rate);
+
+    }
+
+    fclose(data);
+
+}
+
+void LoadFromFile(struct Employee employees[], int count)
+{
+    char fileName[80];
+
+    printf("Filename?\n");
+    scanf(" %s[^\n]", fileName);
+    FILE* datFile;
+    datFile = fopen(fileName, "r");
+
+    if (datFile == NULL) {
+        printf("Error..");
+        return;
+    }
+
+    for (int i = 0; i < count; i++) {
+        fscanf(datFile, "%s %lf %lf", employees[i].name, &employees[i].hours_worked, &employees[i].hourly_rate);
+
+    }
+
+    fclose(datFile);
+
+}
+
+
+void EntryPoint() {
+    struct Employee employees[10];
+    int count = 10;
+
+    char inputMode = InputModel();
+
+    switch (inputMode) {
+    case 'f':
+    case 'F':
+        LoadFromFile(employees, count);
+        break;
+    case 'k':
+    case 'K':
+        load(employees, &count);
+    default:
+        break;
+    }
+
+
+
+    menu();
+
+    puts("");
+    int choice;
+    printf("What is your option\t:\t");
+    scanf("%d", &choice);
+    puts("");
+    puts("");
+    while (choice != 4) {
+        if (choice == 1) {
+            printf("Please enter record index to update, 0 to %d: ", (count));
+            int recordNo;
+            scanf("%d", &recordNo);
+            puts("");
+            updateExistingRecord(employees, recordNo);
+        }
+        else if (choice == 2) {
+            if (count == 0) {
+                printf("No record to print!!!\n");
+            }
+            else {
+                int idxToPrint;
+                printf("Enter record index to print\t:\t");
+                scanf("%d", &idxToPrint);
+                printSingle(employees, idxToPrint);
+            }
+        }
+        else if (choice == 3) {
+            printAll(employees, count);
+        }
+        puts("");
+        printf("Enter new choice : ");
+        scanf("%d", &choice);
+    }
+
+    printf("\nUser chose option 4, program will terminate, do you want to save the updated records?\n\n");
+    char option;
+    scanf(" %c", &option);
+    if (option == 'y') {
+        SaveToFile(employees, count);
+    }
+}
+
+int main(void) {
+    EntryPoint();
+    return 0;
+}
